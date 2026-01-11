@@ -35,6 +35,47 @@ Resources:
             TableName: !Ref UsersTable
       Tags:
         Stack: !Sub "${AWS::StackName}"
+      Events:
+        GetUsersEvent:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: get
+            RestApiId: !Ref RestApi
+        PutUserEvent:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: post
+            RestApiId: !Ref RestApi
+        UpdateUserEvent:
+          Type: Api
+          Properties:
+            Path: /users/{userid}
+            Method: put
+            RestApiId: !Ref RestApi
+        GetUserEvent:
+          Type: Api
+          Properties:
+            Path: /users/{userid}
+            Method: get
+            RestApiId: !Ref RestApi
+        DeleteUserEvent:
+          Type: Api
+          Properties:
+            Path: /users/{userid}
+            Method: delete
+            RestApiId: !Ref RestApi
+
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      TracingEnabled: true
+      Tags:
+        Name: !Sub "${AWS::StackName}-API"
+        Stack: !Sub "${AWS::StackName}"
+
 Outputs:
   UsersTable:
     Description: DynamoDB Users table
@@ -42,3 +83,6 @@ Outputs:
   UsersFunction:
     Description: "Lambda Function used to perform actions on the users Data"
     Value: !Ref UsersFunction
+  APIEndpoint:
+    Description: "API Gatewat endpoint URL"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
