@@ -29,7 +29,7 @@ Resources:
       Description: Handler for all users related operations
       Environment:
         Variables:
-          USER_TABLE: !Ref UsersTable
+          USERS_TABLE: !Ref UsersTable
       Policies: 
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
