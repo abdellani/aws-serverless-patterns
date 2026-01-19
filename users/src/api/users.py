@@ -12,16 +12,14 @@ USERS_TABLE = os.getenv('USERS_TABLE', None)
 dynamodb = boto3.resource('dynamodb')
 ddbTable = dynamodb.Table(USERS_TABLE)
 
+
 def lambda_handler(event, context):
     route_key = f"{event['httpMethod']} {event['resource']}"
 
     # Set default response, override with data from DynamoDB if any
     response_body = {'Message': 'Unsupported route'}
     status_code = 400
-    headers = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-        }
+    headers = {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
 
     try:
         # Get a list of all Users
@@ -32,7 +30,7 @@ def lambda_handler(event, context):
             status_code = 200
 
         # CRUD operations for a single User
-       
+
         # Read a user by ID
         if route_key == 'GET /users/{userid}':
             # get data from the database
@@ -45,27 +43,23 @@ def lambda_handler(event, context):
             else:
                 response_body = {}
             status_code = 200
-        
+
         # Delete a user by ID
         if route_key == 'DELETE /users/{userid}':
             # delete item in the database
-            ddbTable.delete_item(
-                Key={'userid': event['pathParameters']['userid']}
-            )
+            ddbTable.delete_item(Key={'userid': event['pathParameters']['userid']})
             response_body = {}
             status_code = 200
-        
-        # Create a new user 
-        if route_key == 'POST /users':
+
+        # Create a new user
+        if route_key == 'PUT /users':
             request_json = json.loads(event['body'])
             request_json['timestamp'] = datetime.now().isoformat()
             # generate unique id if it isn't present in the request
             if 'userid' not in request_json:
                 request_json['userid'] = str(uuid.uuid1())
             # update the database
-            ddbTable.put_item(
-                Item=request_json
-            )
+            ddbTable.put_item(Item=request_json)
             response_body = request_json
             status_code = 200
 
@@ -76,9 +70,7 @@ def lambda_handler(event, context):
             request_json['timestamp'] = datetime.now().isoformat()
             request_json['userid'] = event['pathParameters']['userid']
             # update the database
-            ddbTable.put_item(
-                Item=request_json
-            )
+            ddbTable.put_item(Item=request_json)
             response_body = request_json
             status_code = 200
     except Exception as err:
@@ -88,5 +80,5 @@ def lambda_handler(event, context):
     return {
         'statusCode': status_code,
         'body': json.dumps(response_body),
-        'headers': headers
+        'headers': headers,
     }
